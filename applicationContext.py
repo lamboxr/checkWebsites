@@ -1,7 +1,7 @@
 is_running = False
 # second
 author = '徐睿'
-version = '0.01'
+version = '0.2'
 cycle = 2 * 60 * 60
 # cycle = 15
 
