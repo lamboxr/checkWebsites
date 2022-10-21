@@ -1,41 +1,21 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QObject, pyqtSignal
 from PyQt5.QtGui import QFont
 
 import applicationContext
 
 
+
+
 class Ui_MainWindow(object):
 
-    def setupUi_(self, MainWindow):
-        MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(577, 555)
-        self.centralwidget = QtWidgets.QWidget(MainWindow)
-        self.centralwidget.setObjectName("centralwidget")
-        self.textBrowser = QtWidgets.QTextBrowser(self.centralwidget)
-        self.textBrowser.setGeometry(QtCore.QRect(20, 10, 361, 491))
-        self.textBrowser.setObjectName("textBrowser")
-        self.button_start = QtWidgets.QPushButton(self.centralwidget)
-        self.button_start.setGeometry(QtCore.QRect(430, 40, 93, 28))
-        self.button_start.setObjectName("button_start")
-        self.button_determine = QtWidgets.QPushButton(self.centralwidget)
-        self.button_determine.setGeometry(QtCore.QRect(430, 140, 93, 28))
-        self.button_determine.setObjectName("button_determine")
-        MainWindow.setCentralWidget(self.centralwidget)
-        self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 577, 26))
-        self.menubar.setObjectName("menubar")
-        MainWindow.setMenuBar(self.menubar)
-        self.statusbar = QtWidgets.QStatusBar(MainWindow)
-        self.statusbar.setObjectName("statusbar")
-        MainWindow.setStatusBar(self.statusbar)
 
-        self.retranslateUi(MainWindow)
-        QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def setupUi(self, MainWindow):
         self.font_label = QFont()
         self.font_label.setPointSize(10)
+
+
 
         MainWindow.resize(800, 720)
         MainWindow.setFixedSize(800, 720)
@@ -88,7 +68,7 @@ class Ui_MainWindow(object):
         self.button_determine = QtWidgets.QPushButton(self.central_widget)
         self.button_determine.setGeometry(QtCore.QRect(447, 660, 93, 28))
         self.button_determine.setObjectName("button_determine")
-        # self.button_determine.setDisabled(True)
+        self.button_determine.setDisabled(True)
 
         MainWindow.setCentralWidget(self.central_widget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
@@ -107,7 +87,7 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(
             _translate("MainWindow", "网站首页检查器 v%s -- by %s" % (applicationContext.version, applicationContext.author)))
         self.button_start.setText(_translate("MainWindow", "启动"))
-        self.button_determine.setText(_translate("MainWindow", "关闭"))
+        self.button_determine.setText(_translate("MainWindow", "停止"))
 
     def switch_ftqq_ComboBox_onchange(self, state):
         self.ftqq_key_Edit.setReadOnly(state == 0)

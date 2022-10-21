@@ -3,6 +3,7 @@ is_running = False
 author = '徐睿'
 version = '0.01'
 cycle = 2 * 60 * 60
+# cycle = 15
 
 template_dir = 'template'
 

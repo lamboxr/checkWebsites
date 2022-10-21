@@ -7,9 +7,12 @@ import applicationContext
 import checker
 from Ui_MainWindow import Ui_MainWindow
 
+
 # from test_ui import Ui_MainWindow
 
-is_checking = False
+
+class SignalStore(QObject):
+    append_log = pyqtSignal(str)
 
 
 class MyThread(QThread):
@@ -29,6 +32,7 @@ class MyThread(QThread):
 class Main(QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None):
         super(Main, self).__init__(parent)
+
         self.thread_no = 0  # 序号
         self.setupUi(self)
         self.threads = MyThread(self)  # 自定义线程类
@@ -36,10 +40,12 @@ class Main(QMainWindow, Ui_MainWindow):
 
         self.c = checker.Checker(self)
 
-        self.button_start.clicked.connect(lambda checked: self.start())
-        self.button_determine.clicked.connect(lambda checked: self.stop())
+        self.button_start.clicked.connect(lambda checked: self.button_start_onClick())
+        self.button_determine.clicked.connect(lambda checked: self.button_determine_onClick())
+        self.so = SignalStore()
+        self.so.append_log.connect(self.c.appendLog)  # TODO
 
-    def start(self):
+    def button_start_onClick(self):
         '''
         当点击start按键时日志栏中应显示start:序号
         '''
@@ -47,30 +53,36 @@ class Main(QMainWindow, Ui_MainWindow):
         # message = "start:{0}".format(self.thread_no)
         applicationContext.is_running = True
         self.button_start.setDisabled(applicationContext.is_running)
-        # self.button_determine.setDisabled(not applicationContext.is_running)
+        self.button_determine.setDisabled(not applicationContext.is_running)
 
         if not self.c.validate():
             self.warning_Label.setText("Server酱 KEY不能为空")
             applicationContext.is_running = False
             self.button_start.setDisabled(applicationContext.is_running)
-            # self.button_determine.setDisabled(not applicationContext.is_running)
+            self.button_determine.setDisabled(not applicationContext.is_running)
             return
         else:
             self.warning_Label.setText("运行中...")
             self.switch_ftqq_ComboBox.setDisabled(True)
+            if self.switch_ftqq_ComboBox.isChecked():
+                self.ftqq_key_Edit.setReadOnly(applicationContext.is_running)
+                self.ftqq_key_Edit.setDisabled(applicationContext.is_running)
 
-        self.c.start_check()
+        self.c.handle_check()
         # self.threads.run_(message)  # start the thread
 
-    def stop(self):
+    def button_determine_onClick(self):
         '''
         当点击stop按键时日志栏中应显示stop:序号
         '''
         if self.c.determine():
             self.button_start.setDisabled(applicationContext.is_running)
-            # self.button_determine.setDisabled(not applicationContext.is_running)
+            self.button_determine.setDisabled(not applicationContext.is_running)
             self.switch_ftqq_ComboBox.setDisabled(applicationContext.is_running)
             self.warning_Label.setText('已停止')
+            if self.switch_ftqq_ComboBox.isChecked():
+                self.ftqq_key_Edit.setReadOnly(applicationContext.is_running)
+                self.ftqq_key_Edit.setDisabled(applicationContext.is_running)
 
     def update_text(self, message):
         '''

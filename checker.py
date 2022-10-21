@@ -5,22 +5,40 @@ import pathlib
 import sys
 import time
 # from concurrent.futures import wait, ALL_COMPLETED, FIRST_COMPLETED
+from threading import Thread
 
-import click
 import requests
-import schedule
 from PyQt5.QtWidgets import QApplication
-from schedule import every, repeat, run_pending
-from timeloop import Timeloop
+from apscheduler.schedulers.blocking import BlockingScheduler
 
-import checkWebsites_GUI
 import LoggerFactory
 import applicationContext
 import file_util
 
-# from t.BoundedThreadPoolExecutor import BoundedThreadPoolExecutor
-
 logger = LoggerFactory.getLogger(__name__)
+
+
+def generate_templates():
+    _root, _name = os.path.split(os.path.abspath(sys.argv[0]))
+    pathlib.Path(os.path.join(_root, applicationContext.template_dir)).mkdir(parents=True, exist_ok=True)
+    for key, value in applicationContext.urls.items():
+        resp = requests.get(value)
+        if resp.status_code == 200:
+            html = resp.text.replace(' ', '').replace('\t', '').replace('\n', '').replace('\r', '')
+            with open(os.path.join(_root, applicationContext.template_dir, key), 'w',
+                      encoding='utf-8') as file_object:
+                file_object.write(html)
+
+    for key, value in applicationContext.login_pages.items():
+        resp = requests.get(value)
+        # if resp.status_code == 200:
+        html = resp.text.replace(' ', '').replace('\t', '').replace('\n', '').replace('\r', '')
+        with open(os.path.join(_root, applicationContext.template_dir, key), 'w',
+                  encoding='utf-8') as file_object:
+            file_object.write(html)
+    # else:
+    #     print(value + " : " + str(resp.status_code))
+    #     print(resp.text)
 
 
 class Checker:
@@ -31,7 +49,9 @@ class Checker:
         self.threads = ui.threads
         self.thread_no = ui.thread_no
         self._root, self._name = os.path.split(os.path.abspath(sys.argv[0]))
-        self.job = None
+        # self.job = schedule.every(applicationContext.cycle).seconds.do(self.check_job)
+        self.sched = BlockingScheduler()
+        self.sched.add_job(self.check_job, 'interval', seconds=applicationContext.cycle, id='check_job_id')
 
     # CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
@@ -46,28 +66,6 @@ class Checker:
     #     _init()
     #     logger.info('""" 初始化完成 """')
 
-    def _init(self):
-        pathlib.Path(os.path.join(self._root, applicationContext.template_dir)).mkdir(parents=True, exist_ok=True)
-        for key, value in applicationContext.urls.items():
-            resp = requests.get(value)
-            if resp.status_code == 200:
-                html = resp.text.replace(' ', '').replace('\t', '').replace('\n', '').replace('\r', '')
-                with open(os.path.join(self._root, applicationContext.template_dir, key), 'w',
-                          encoding='utf-8') as file_object:
-                    file_object.write(html)
-                self.info('保存网页完毕%s' % value)
-
-        for key, value in applicationContext.login_pages.items():
-            resp = requests.get(value)
-            # if resp.status_code == 200:
-            html = resp.text.replace(' ', '').replace('\t', '').replace('\n', '').replace('\r', '')
-            with open(os.path.join(self._root, applicationContext.template_dir, key), 'w',
-                      encoding='utf-8') as file_object:
-                file_object.write(html)
-            self.info('保存网页完毕%s' % value)
-        # else:
-        #     print(value + " : " + str(resp.status_code))
-        #     print(resp.text)
 
     def validate(self):
         if self.ui.switch_ftqq_ComboBox.isChecked():
@@ -76,41 +74,63 @@ class Checker:
         return True
 
     # @cli.command(name="check")
-    def start_check(self):
-        """ 启动检查程序 """
-        self.info('')
-        self.info('""" 启动检查程序 """')
-        self.info('')
-        if self.ui.switch_ftqq_ComboBox.isChecked():
-            self.info('微信推送: 开启')
-        else:
-            self.info('微信推送: 未开启')
+    def handle_check(self):
 
-        # with BoundedThreadPoolExecutor(max_workers=1) as t:
-        #     all_tasks = [t.submit(self._check_in_t)]
-        #     wait(all_tasks, return_when=FIRST_COMPLETED)
-        self._check()
-        self.job = schedule.every(applicationContext.cycle).seconds.do(self._check)
-        while True:
-            run_pending()
-            time.sleep(1)
+        def start_check():
+            """ 启动检查程序 """
+            self.info('')
+            self.info('""" 启动检查程序 """')
+            self.info('')
+            if self.ui.switch_ftqq_ComboBox.isChecked():
+                self.info('微信推送: 开启')
+            else:
+                self.info('微信推送: 未开启')
+            self.info('')
+
+            # with BoundedThreadPoolExecutor(max_workers=1) as t:
+            #     all_tasks = [t.submit(self._check_in_t)]
+            #     wait(all_tasks, return_when=FIRST_COMPLETED)
+
+            if not self.sched.running:  # 未运行
+                self.info('开启检查定时任务...')
+                self.info('')
+                self.check_job()
+                self.sched.start()
+                self.sched.n
+
+            elif self.sched.state == 2:
+                self.info('恢复检查定时任务...')
+                self.info('')
+                self.check_job()
+                self.sched.resume()
+
+            # if self.job is None:
+            #     self.job = schedule.every(applicationContext.cycle).seconds.do(self.check_job)
+            # while True:
+            #     run_pending()
+            #     time.sleep(1)
+
+        worker = Thread(target=start_check)
+        worker.start()
 
     def determine(self):
-        sys.exit(app.exec_())
-        schedule.clear(self.job)
-        self.job = None
+        # schedule.cancel_job(self.job)
+
+        # schedule.clear(self.job)
+        if self.sched.state == 1:
+            self.sched.pause()
         self.info('')
-        self.info('""" 停止检查程序 """')
+        self.info('""" 检查被用户手动终止 """')
         applicationContext.is_running = False
         return True
 
     # @repeat(every(cycle).seconds)
-    def _check(self):
+    def check_job(self):
         start_time = time.time()
         msg = '\n检查结果：\n\n'
 
         check_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
-        self.info("开始本次检查，检查时间%s" % check_time)
+        self.info("开始新一轮，检查时间%s" % check_time)
         self.info('')
         self.info("检查首页")
 
@@ -122,7 +142,7 @@ class Checker:
                 if not html == _txt:
                     # print("error: " + key + " - " + value)
                     line_msg = '%s : WARNING!' % value
-                    self.error(line_msg.replace('WARNING!', '<font style="color:blue">WARNING!</font>'))
+                    self.error(line_msg.replace('WARNING!', '<font style="color:red">WARNING!</font>'))
                     msg += line_msg + '\n'
                 else:
                     line_msg = '%s : ok' % (value)
@@ -140,7 +160,7 @@ class Checker:
             if not html == _txt:
                 # print("error: " + key + " - " + value)
                 line_msg = '%s : WARNING!' % value
-                self.error(line_msg.replace('WARNING!', '<font style="color:blue">WARNING!</font>'))
+                self.error(line_msg.replace('WARNING!', '<font style="color:red">WARNING!</font>'))
                 msg += line_msg + '\n'
             else:
                 line_msg = '%s : ok' % (value)
@@ -159,8 +179,12 @@ class Checker:
         self.info('')
         self.info('本次检查结束，耗时：%f秒' % (end_time - start_time))
         self.info('')
-        self.info('等待下一次检查... 预计下次检查时间 %s' % time.strftime('%Y-%m-%d %H:%M:%S',
-                                                           time.localtime(time.time() + applicationContext.cycle)))
+        if applicationContext.is_running:
+            self.info('预计下次检查时间 %s, 请耐心等待...' % time.strftime('%Y-%m-%d %H:%M:%S',
+                                                              time.localtime(time.time() + applicationContext.cycle)))
+        else:
+            self.info('侦测到检查被用户终止,再次启动将继续检查...')
+            self.info('')
 
     def ftqq_push(self, check_time, msg):
         api = 'https://sctapi.ftqq.com/%s.send' % self.ui.ftqq_key_Edit.text()
@@ -192,8 +216,13 @@ class Checker:
 
     def appendToLogBrowser(self, msg):
         self.thread_no += 1
-        self.ui.log_Browser.append('%d: %s' % (self.thread_no, msg))  # labelruning可以是文本部件或标签部件
+        self.ui.so.append_log.emit('%d: %s' % (self.thread_no, msg))
+        # self.ui.log_Browser.append()  # labelruning可以是文本部件或标签部件
         QApplication.processEvents()  # 实时刷新界面
 
-# if __name__ == '__main__':
-#     cli()
+    # 处理进度的slot函数
+    def appendLog(self, log):
+        self.ui.log_Browser.append(log)
+
+if __name__ == '__main__':
+    generate_templates()
