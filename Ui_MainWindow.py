@@ -65,12 +65,16 @@ class Ui_MainWindow(object):
         self.lineEdit_ftqq_key.setReadOnly(True)
         self.lineEdit_ftqq_key.setDisabled(True)
 
+        self.button_init = QtWidgets.QPushButton(self.central_widget)
+        self.button_init.setGeometry(QtCore.QRect(185, 660, 90, 28))
+        self.button_init.setObjectName("button_init")
+
         self.button_start = QtWidgets.QPushButton(self.central_widget)
-        self.button_start.setGeometry(QtCore.QRect(260, 660, 93, 28))
+        self.button_start.setGeometry(QtCore.QRect(355, 660, 90, 28))
         self.button_start.setObjectName("button_start")
 
         self.button_determine = QtWidgets.QPushButton(self.central_widget)
-        self.button_determine.setGeometry(QtCore.QRect(447, 660, 93, 28))
+        self.button_determine.setGeometry(QtCore.QRect(525, 660, 90, 28))
         self.button_determine.setObjectName("button_determine")
         self.button_determine.setDisabled(True)
 
@@ -90,8 +94,9 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(
             _translate("MainWindow", "网站首页检查器 v%s -- by %s" % (applicationContext.version, applicationContext.author)))
-        self.button_start.setText(_translate("MainWindow", "启动"))
-        self.button_determine.setText(_translate("MainWindow", "停止"))
+        self.button_init.setText(_translate("MainWindow", "生成模版"))
+        self.button_start.setText(_translate("MainWindow", "启  动"))
+        self.button_determine.setText(_translate("MainWindow", "停  止"))
         self.label_cycle.setText(_translate("MainWindow", "时间间隔:"))
         self.radio_cycle_quarter.setText(_translate("MainWindow", "15分钟"))
         self.radio_cycle_half_an_hour.setText(_translate("MainWindow", "30分钟"))

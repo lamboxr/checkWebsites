@@ -1,5 +1,6 @@
 import sys
 
+from PyQt5 import QtGui
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
@@ -27,6 +28,7 @@ class Main(QMainWindow, Ui_MainWindow):
         self.radio_cycle_one_hour.toggled.connect(lambda checked: self.radio_button_toggled(60))
         self.radio_cycle_two_hour.toggled.connect(lambda checked: self.radio_button_toggled(60 * 2))
 
+        self.button_init.clicked.connect(self.button_init_onClick)
         self.button_start.clicked.connect(self.button_start_onClick)
         self.button_determine.clicked.connect(self.button_determine_onClick)
         self.ssLogBrowser = SignalStoreLogBrowser()
@@ -34,18 +36,32 @@ class Main(QMainWindow, Ui_MainWindow):
         self.comboBox_switch_ftqq.stateChanged.connect(self.switch_ftqq_ComboBox_onchange)
         checker.ui = self
 
+    def button_init_onClick(self):
+        checker.is_checking = True
+        self.setWidgetStyle()
+        self.button_determine.setDisabled(True)
+        if checker.templates_exist():
+            reply = QMessageBox.question(self, 'Message', '模版已存在，是否重新生成?',
+                                         QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+            if reply:
+                reply2 = QMessageBox.question(self, 'Message', '请确认网站均可访问后再生成模版，是否继续?',
+                                              QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+                if reply2:
+                    checker.handle_generate_templates()
+
+
     def button_start_onClick(self):
         '''
         当点击start按键时日志栏中应显示start:序号
         '''
         # self.thread_no += 1
         # message = "start:{0}".format(self.thread_no)
-        applicationContext.is_running = True
+        applicationContext.is_checking = True
         self.setWidgetStyle()
 
         if not checker.validate():
             self.label_warning.setText("Server酱 KEY不能为空")
-            applicationContext.is_running = False
+            applicationContext.is_checking = False
             self.setWidgetStyle()
             return
         else:
@@ -61,6 +77,7 @@ class Main(QMainWindow, Ui_MainWindow):
         '''
         if checker.determine():
             self.label_warning.setText('已停止')
+            applicationContext.is_checking = False
             self.setWidgetStyle()
 
     def update_text(self, message):
@@ -73,18 +90,19 @@ class Main(QMainWindow, Ui_MainWindow):
         self.cycle = cycle * 60
 
     def setWidgetStyle(self):
-        self.radio_cycle_quarter.setEnabled(not applicationContext.is_running)
-        self.radio_cycle_half_an_hour.setEnabled(not applicationContext.is_running)
-        self.radio_cycle_one_hour.setEnabled(not applicationContext.is_running)
-        self.radio_cycle_two_hour.setEnabled(not applicationContext.is_running)
-        self.comboBox_switch_ftqq.setEnabled(not applicationContext.is_running)
-        self.lineEdit_ftqq_key.setEnabled(not applicationContext.is_running and self.comboBox_switch_ftqq.isChecked())
-        self.button_start.setEnabled(not applicationContext.is_running)
-        self.button_determine.setEnabled(applicationContext.is_running)
-
+        self.radio_cycle_quarter.setEnabled(not applicationContext.is_checking)
+        self.radio_cycle_half_an_hour.setEnabled(not applicationContext.is_checking)
+        self.radio_cycle_one_hour.setEnabled(not applicationContext.is_checking)
+        self.radio_cycle_two_hour.setEnabled(not applicationContext.is_checking)
+        self.comboBox_switch_ftqq.setEnabled(not applicationContext.is_checking)
+        self.lineEdit_ftqq_key.setEnabled(not applicationContext.is_checking and self.comboBox_switch_ftqq.isChecked())
+        self.button_init.setEnabled(not applicationContext.is_checking)
+        self.button_start.setEnabled(not applicationContext.is_checking)
+        self.button_determine.setEnabled(applicationContext.is_checking)
 
     def switch_ftqq_ComboBox_onchange(self, state):
         self.lineEdit_ftqq_key.setDisabled(state == 0)
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

@@ -1,10 +1,8 @@
-is_running = False
+is_checking = False
 # second
 author = '徐睿'
 version = '0.3'
 # cycle = 2 * 60 * 60
-cycle = 15
-
 template_dir = 'template'
 
 urls = {'1': 'https://www.fiberhome.work',

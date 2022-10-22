@@ -16,29 +16,56 @@ import applicationContext
 import file_util
 
 logger = LoggerFactory.getLogger(__name__)
-
 _root, _name = os.path.split(os.path.abspath(sys.argv[0]))
+templates_path = os.path.join(_root, applicationContext.template_dir)
 ui = None
 
 
-def generate_templates():
-    _root, _name = os.path.split(os.path.abspath(sys.argv[0]))
-    pathlib.Path(os.path.join(_root, applicationContext.template_dir)).mkdir(parents=True, exist_ok=True)
-    for key, value in applicationContext.urls.items():
-        resp = requests.get(value)
-        if resp.status_code == 200:
+def templates_exist():
+    pathlib.Path(templates_path).mkdir(parents=True, exist_ok=True)
+    return len(os.listdir(templates_path))
+
+
+def handle_generate_templates():
+    def generate_templates_sub_thread(ui, _root):
+        pathlib.Path(templates_path).mkdir(parents=True, exist_ok=True)
+        if len(os.listdir(templates_path)):
+            info('')
+            info('""" 正在清除模版... """')
+            info('')
+
+        info('""" 正在生成模版... """')
+        info('')
+
+        for key, value in applicationContext.urls.items():
+            resp = requests.get(value)
+            if resp.status_code == 200:
+                html = resp.text.replace(' ', '').replace('\t', '').replace('\n', '').replace('\r', '')
+                with open(os.path.join(templates_path, key), 'w',
+                          encoding='utf-8') as file_object:
+                    file_object.write(html)
+
+        for key, value in applicationContext.login_pages.items():
+            resp = requests.get(value)
+            # if resp.status_code == 200:
             html = resp.text.replace(' ', '').replace('\t', '').replace('\n', '').replace('\r', '')
-            with open(os.path.join(_root, applicationContext.template_dir, key), 'w',
+            with open(os.path.join(templates_path, key), 'w',
                       encoding='utf-8') as file_object:
                 file_object.write(html)
 
-    for key, value in applicationContext.login_pages.items():
-        resp = requests.get(value)
-        # if resp.status_code == 200:
-        html = resp.text.replace(' ', '').replace('\t', '').replace('\n', '').replace('\r', '')
-        with open(os.path.join(_root, applicationContext.template_dir, key), 'w',
-                  encoding='utf-8') as file_object:
-            file_object.write(html)
+        info('""" 模版生成完毕 """')
+        info('')
+        applicationContext.is_checking = False
+        ui.setWidgetStyle()
+
+        # if job is None:
+        #     job = schedule.every(applicationContext.cycle).seconds.do(check_job)
+        # while True:
+        #     run_pending()
+        #     time.sleep(1)
+
+    worker = Thread(target=generate_templates_sub_thread, kwargs={'ui': ui, '_root': _root})
+    worker.start()
 
 
 def check_once():
@@ -90,7 +117,7 @@ def check_once():
     info('')
     info('本次检查结束，耗时：%f秒' % (end_time - start_time))
     info('')
-    if applicationContext.is_running:
+    if applicationContext.is_checking:
         info('预计下次检查时间 %s, 请耐心等待...' % time.strftime('%Y-%m-%d %H:%M:%S',
                                                      time.localtime(start_time + ui.cycle)))
     else:
@@ -147,12 +174,13 @@ def determine():
     # schedule.cancel_job(self.job)
 
     # schedule.clear(self.job)
-    if sched.state == 1:
-        sched.pause()
-    info('')
-    info('""" 检查被用户手动终止 """')
-    applicationContext.is_running = False
-    return True
+
+    if applicationContext.is_checking:
+        if sched.state == 1:
+            sched.pause()
+        info('')
+        info('""" 检查被用户手动终止 """')
+        return True
 
 
 def ftqq_push(send_key, check_time, msg):
@@ -201,5 +229,4 @@ def appendLog(log):
 
 
 sched = BlockingScheduler()
-if __name__ == '__main__':
-    generate_templates()
+
