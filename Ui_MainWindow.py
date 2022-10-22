@@ -5,61 +5,65 @@ from PyQt5.QtGui import QFont
 import applicationContext
 
 
-
-
 class Ui_MainWindow(object):
-
-
 
     def setupUi(self, MainWindow):
         self.font_label = QFont()
         self.font_label.setPointSize(10)
-
-
 
         MainWindow.resize(800, 720)
         MainWindow.setFixedSize(800, 720)
         self.central_widget = QtWidgets.QWidget(MainWindow)
         # MainWindow.move(300, 100)
 
-        self.notice_Label = QtWidgets.QLabel(self.central_widget)
-        self.notice_Label.setGeometry(QtCore.QRect(40, 25, 300, 40))
-        self.notice_Label.setFont(self.font_label)
-        self.notice_Label.setText('间隔%d秒检查一次网站' % applicationContext.cycle)
+        # self.notice_Label = QtWidgets.QLabel(self.central_widget)
+        # self.notice_Label.setGeometry(QtCore.QRect(40, 25, 300, 40))
+        # self.notice_Label.setFont(self.font_label)
+        # self.notice_Label.setText('间隔%d秒检查一次网站' % applicationContext.cycle)
+        self.label_cycle = QtWidgets.QLabel(self.central_widget)
+        self.label_cycle.setGeometry(QtCore.QRect(40, 25, 100, 40))
+        self.radio_cycle_quarter = QtWidgets.QRadioButton(self.central_widget)
+        self.radio_cycle_quarter.setGeometry(QtCore.QRect(140, 25, 100, 40))
+        self.radio_cycle_half_an_hour = QtWidgets.QRadioButton(self.central_widget)
+        self.radio_cycle_half_an_hour.setGeometry(QtCore.QRect(240, 25, 100, 40))
+        self.radio_cycle_one_hour = QtWidgets.QRadioButton(self.central_widget)
+        self.radio_cycle_one_hour.setGeometry(QtCore.QRect(340, 25, 100, 40))
+        self.radio_cycle_two_hour = QtWidgets.QRadioButton(self.central_widget)
+        self.radio_cycle_two_hour.setGeometry(QtCore.QRect(440, 25, 100, 40))
+        self.radio_cycle_two_hour.setChecked(True)
 
         self.central_widget.setObjectName("central_widget")
         self.log_Browser = QtWidgets.QTextBrowser(self.central_widget)
         self.log_Browser.setGeometry(QtCore.QRect(40, 80, 720, 460))
         self.log_Browser.setObjectName("log_Browser")
 
-        self.warning_Label = QtWidgets.QLabel(self.central_widget)
-        self.warning_Label.setGeometry(QtCore.QRect(40, 550, 200, 40))
-        self.warning_Label.setStyleSheet('font-size:20;color:red;')
-        # self.warning_Label.setFrameShape(QtWidgets.QFrame.Box)
-        self.warning_Label.setFont(self.font_label)
-        # self.warning_Label.setAlignment(Qt.AlignCenter)
-        # self.warning_Label.setText('Warning')
+        self.label_warning = QtWidgets.QLabel(self.central_widget)
+        self.label_warning.setGeometry(QtCore.QRect(40, 550, 200, 40))
+        self.label_warning.setStyleSheet('font-size:20;color:red;')
+        # self.label_warning.setFrameShape(QtWidgets.QFrame.Box)
+        self.label_warning.setFont(self.font_label)
+        # self.label_warning.setAlignment(Qt.AlignCenter)
+        # self.label_warning.setText('Warning')
 
-        self.switch_ftqq_ComboBox = QtWidgets.QCheckBox(self.central_widget)
-        self.switch_ftqq_ComboBox.setGeometry(QtCore.QRect(40, 600, 180, 40))
-        self.switch_ftqq_ComboBox.stateChanged.connect(self.switch_ftqq_ComboBox_onchange)
-        self.switch_ftqq_ComboBox.setText('开启微信推送')
+        self.comboBox_switch_ftqq = QtWidgets.QCheckBox(self.central_widget)
+        self.comboBox_switch_ftqq.setGeometry(QtCore.QRect(40, 600, 180, 40))
+        self.comboBox_switch_ftqq.setText('开启微信推送')
 
         # self.switch_ftqq_Label = QtWidgets.QLabel(self.central_widget)
         # self.switch_ftqq_Label.setGeometry(QtCore.QRect(60, 600, 120, 40))
         # self.switch_ftqq_Label.setFont(self.font_label)
         # self.switch_ftqq_Label.setText('开启微信推送')
 
-        self.ftqq_key_Label = QtWidgets.QLabel(self.central_widget)
-        self.ftqq_key_Label.setGeometry(QtCore.QRect(180, 600, 120, 40))
-        self.ftqq_key_Label.setFont(self.font_label)
-        self.ftqq_key_Label.setText('Serer酱Key:')
+        self.label_ftqq_key = QtWidgets.QLabel(self.central_widget)
+        self.label_ftqq_key.setGeometry(QtCore.QRect(180, 600, 120, 40))
+        self.label_ftqq_key.setFont(self.font_label)
+        self.label_ftqq_key.setText('Server酱Key:')
 
-        self.ftqq_key_Edit = QtWidgets.QLineEdit(self.central_widget)
-        self.ftqq_key_Edit.setGeometry(QtCore.QRect(280, 605, 480, 28))
-        self.ftqq_key_Edit.setPlaceholderText('请填入server酱服务的key')
-        self.ftqq_key_Edit.setReadOnly(True)
-        self.ftqq_key_Edit.setDisabled(True)
+        self.lineEdit_ftqq_key = QtWidgets.QLineEdit(self.central_widget)
+        self.lineEdit_ftqq_key.setGeometry(QtCore.QRect(280, 605, 480, 28))
+        self.lineEdit_ftqq_key.setPlaceholderText('请填入server酱服务的key')
+        self.lineEdit_ftqq_key.setReadOnly(True)
+        self.lineEdit_ftqq_key.setDisabled(True)
 
         self.button_start = QtWidgets.QPushButton(self.central_widget)
         self.button_start.setGeometry(QtCore.QRect(260, 660, 93, 28))
@@ -88,7 +92,10 @@ class Ui_MainWindow(object):
             _translate("MainWindow", "网站首页检查器 v%s -- by %s" % (applicationContext.version, applicationContext.author)))
         self.button_start.setText(_translate("MainWindow", "启动"))
         self.button_determine.setText(_translate("MainWindow", "停止"))
+        self.label_cycle.setText(_translate("MainWindow", "时间间隔:"))
+        self.radio_cycle_quarter.setText(_translate("MainWindow", "15分钟"))
+        self.radio_cycle_half_an_hour.setText(_translate("MainWindow", "30分钟"))
+        self.radio_cycle_one_hour.setText(_translate("MainWindow", "1小时"))
+        self.radio_cycle_two_hour.setText(_translate("MainWindow", "2小时"))
 
-    def switch_ftqq_ComboBox_onchange(self, state):
-        self.ftqq_key_Edit.setReadOnly(state == 0)
-        self.ftqq_key_Edit.setDisabled(state == 0)
+

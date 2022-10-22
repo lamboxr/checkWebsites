@@ -11,39 +11,28 @@ from Ui_MainWindow import Ui_MainWindow
 # from test_ui import Ui_MainWindow
 
 
-class SignalStore(QObject):
+class SignalStoreLogBrowser(QObject):
     append_log = pyqtSignal(str)
-
-
-class MyThread(QThread):
-    # 设置线程变量
-    trigger = pyqtSignal(str)
-
-    def __init__(self, parent=None):
-        super(MyThread, self).__init__(parent)
-
-    def run_(self, message):
-        '''
-        向信号trigger发送消息
-        '''
-        self.trigger.emit(message)
 
 
 class Main(QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None):
         super(Main, self).__init__(parent)
 
-        self.thread_no = 0  # 序号
+        self.log_idx = 0
+        self.cycle = 2 * 60 * 60
         self.setupUi(self)
-        self.threads = MyThread(self)  # 自定义线程类
-        self.threads.trigger.connect(self.update_text)  # 当信号接收到消息时，更新数据
+        self.radio_cycle_quarter.toggled.connect(lambda checked: self.radio_button_toggled(15))
+        self.radio_cycle_half_an_hour.toggled.connect(lambda checked: self.radio_button_toggled(30))
+        self.radio_cycle_one_hour.toggled.connect(lambda checked: self.radio_button_toggled(60))
+        self.radio_cycle_two_hour.toggled.connect(lambda checked: self.radio_button_toggled(60 * 2))
 
-        self.c = checker.Checker(self)
-
-        self.button_start.clicked.connect(lambda checked: self.button_start_onClick())
-        self.button_determine.clicked.connect(lambda checked: self.button_determine_onClick())
-        self.so = SignalStore()
-        self.so.append_log.connect(self.c.appendLog)  # TODO
+        self.button_start.clicked.connect(self.button_start_onClick)
+        self.button_determine.clicked.connect(self.button_determine_onClick)
+        self.ssLogBrowser = SignalStoreLogBrowser()
+        self.ssLogBrowser.append_log.connect(checker.appendLog)
+        self.comboBox_switch_ftqq.stateChanged.connect(self.switch_ftqq_ComboBox_onchange)
+        checker.ui = self
 
     def button_start_onClick(self):
         '''
@@ -52,37 +41,27 @@ class Main(QMainWindow, Ui_MainWindow):
         # self.thread_no += 1
         # message = "start:{0}".format(self.thread_no)
         applicationContext.is_running = True
-        self.button_start.setDisabled(applicationContext.is_running)
-        self.button_determine.setDisabled(not applicationContext.is_running)
+        self.setWidgetStyle()
 
-        if not self.c.validate():
-            self.warning_Label.setText("Server酱 KEY不能为空")
+        if not checker.validate():
+            self.label_warning.setText("Server酱 KEY不能为空")
             applicationContext.is_running = False
-            self.button_start.setDisabled(applicationContext.is_running)
-            self.button_determine.setDisabled(not applicationContext.is_running)
+            self.setWidgetStyle()
             return
         else:
-            self.warning_Label.setText("运行中...")
-            self.switch_ftqq_ComboBox.setDisabled(True)
-            if self.switch_ftqq_ComboBox.isChecked():
-                self.ftqq_key_Edit.setReadOnly(applicationContext.is_running)
-                self.ftqq_key_Edit.setDisabled(applicationContext.is_running)
+            self.label_warning.setText("运行中...")
+            self.setWidgetStyle()
 
-        self.c.handle_check()
+        checker.handle_check()
         # self.threads.run_(message)  # start the thread
 
     def button_determine_onClick(self):
         '''
         当点击stop按键时日志栏中应显示stop:序号
         '''
-        if self.c.determine():
-            self.button_start.setDisabled(applicationContext.is_running)
-            self.button_determine.setDisabled(not applicationContext.is_running)
-            self.switch_ftqq_ComboBox.setDisabled(applicationContext.is_running)
-            self.warning_Label.setText('已停止')
-            if self.switch_ftqq_ComboBox.isChecked():
-                self.ftqq_key_Edit.setReadOnly(applicationContext.is_running)
-                self.ftqq_key_Edit.setDisabled(applicationContext.is_running)
+        if checker.determine():
+            self.label_warning.setText('已停止')
+            self.setWidgetStyle()
 
     def update_text(self, message):
         '''
@@ -90,6 +69,22 @@ class Main(QMainWindow, Ui_MainWindow):
         '''
         self.log_Browser.append(message)
 
+    def radio_button_toggled(self, cycle):
+        self.cycle = cycle * 60
+
+    def setWidgetStyle(self):
+        self.radio_cycle_quarter.setEnabled(not applicationContext.is_running)
+        self.radio_cycle_half_an_hour.setEnabled(not applicationContext.is_running)
+        self.radio_cycle_one_hour.setEnabled(not applicationContext.is_running)
+        self.radio_cycle_two_hour.setEnabled(not applicationContext.is_running)
+        self.comboBox_switch_ftqq.setEnabled(not applicationContext.is_running)
+        self.lineEdit_ftqq_key.setEnabled(not applicationContext.is_running and self.comboBox_switch_ftqq.isChecked())
+        self.button_start.setEnabled(not applicationContext.is_running)
+        self.button_determine.setEnabled(applicationContext.is_running)
+
+
+    def switch_ftqq_ComboBox_onchange(self, state):
+        self.lineEdit_ftqq_key.setDisabled(state == 0)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
