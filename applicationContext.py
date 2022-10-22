@@ -1,7 +1,7 @@
 is_checking = False
 # second
 author = '徐睿'
-version = '0.3'
+version = '0.4'
 # cycle = 2 * 60 * 60
 template_dir = 'template'
 
