@@ -2,6 +2,7 @@
 
 import os.path
 import pathlib
+import shutil
 import sys
 import time
 # from concurrent.futures import wait, ALL_COMPLETED, FIRST_COMPLETED
@@ -18,6 +19,7 @@ import file_util
 logger = LoggerFactory.getLogger(__name__)
 _root, _name = os.path.split(os.path.abspath(sys.argv[0]))
 templates_path = os.path.join(_root, applicationContext.template_dir)
+templates_bak_path = os.path.join(_root, applicationContext.template_bak_dir)
 ui = None
 
 
@@ -31,8 +33,13 @@ def handle_generate_templates():
         pathlib.Path(templates_path).mkdir(parents=True, exist_ok=True)
         if len(os.listdir(templates_path)):
             info('')
-            info('""" 正在清除模版... """')
+            info('""" 正在备份模版... """')
             info('')
+            if os.path.exists(templates_bak_path):
+                shutil.rmtree(templates_bak_path)
+            shutil.move(templates_path, templates_bak_path)
+            shutil.rmtree(templates_path, templates_bak_path)
+            os.makedirs(templates_path)
 
         info('""" 正在生成模版... """')
         info('')
@@ -229,4 +236,3 @@ def appendLog(log):
 
 
 sched = BlockingScheduler()
-

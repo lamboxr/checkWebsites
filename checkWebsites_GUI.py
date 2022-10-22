@@ -40,15 +40,15 @@ class Main(QMainWindow, Ui_MainWindow):
         checker.is_checking = True
         self.setWidgetStyle()
         self.button_determine.setDisabled(True)
-        if checker.templates_exist():
-            reply = QMessageBox.question(self, 'Message', '模版已存在，是否重新生成?',
-                                         QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
-            if reply:
-                reply2 = QMessageBox.question(self, 'Message', '请确认网站均可访问后再生成模版，是否继续?',
-                                              QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
-                if reply2:
-                    checker.handle_generate_templates()
+        reply = QMessageBox.question(self, 'Message', '请确认网站均可访问后再生成模版，是否继续?', QMessageBox.Yes | QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            if checker.templates_exist():
+                reply2 = QMessageBox.question(self, 'Message', '模版已存在，是否重新生成?', QMessageBox.Yes | QMessageBox.No)
 
+                if reply2 == QMessageBox.Yes:
+                    checker.handle_generate_templates()
+            else:
+                checker.handle_generate_templates()
 
     def button_start_onClick(self):
         '''
