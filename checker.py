@@ -75,7 +75,7 @@ def handle_generate_templates():
     worker.start()
 
 
-def check_once():
+def check_once(timeout=None):
     start_time = time.time()
     msg = '\n检查结果：\n\n'
 
@@ -86,18 +86,23 @@ def check_once():
 
     for key, value in applicationContext.urls.items():
         _txt = file_util.read_file(os.path.join(applicationContext.template_dir, key))
-        resp = requests.get(value)
-        if resp.status_code == 200:
-            html = resp.text.replace(' ', '').replace('\t', '').replace('\n', '').replace('\r', '')
-            if not html == _txt:
-                # print("error: " + key + " - " + value)
-                line_msg = '%s : WARNING!' % value
-                error(line_msg.replace('WARNING!', '<font style="color:red">WARNING!</font>'))
-                msg += line_msg + '\n'
-            else:
-                line_msg = '%s : ok' % (value)
-                info(line_msg.replace('ok', '<font style="color:blue">ok</font>'))
-                msg += line_msg + '\n'
+        try:
+            resp = requests.get(url=value, timeout=timeout)
+            if resp.status_code == 200:
+                html = resp.text.replace(' ', '').replace('\t', '').replace('\n', '').replace('\r', '')
+                if not html == _txt:
+                    # print("error: " + key + " - " + value)
+                    line_msg = '%s : WARNING!' % value
+                    error(line_msg.replace('WARNING!', '<font style="color:red">WARNING!</font>'))
+                    msg += line_msg + '\n'
+                else:
+                    line_msg = '%s : ok' % (value)
+                    info(line_msg.replace('ok', '<font style="color:blue">ok</font>'))
+                    msg += line_msg + '\n'
+        except:
+            line_msg = '%s : TIMEOUT!' % value
+            error(line_msg.replace('TIMEOUT!', '<font style="color:red">TIMEOUT!</font>'))
+            msg += line_msg + '\n'
 
     msg += '\n\n'
     info('')
@@ -132,8 +137,8 @@ def check_once():
         info('')
 
 
-def check_job():
-    check_once()
+def check_job(timeout=None):
+    check_once(timeout=timeout)
 
 
 """验证send_key是否为空"""
@@ -158,13 +163,13 @@ def handle_check():
         if not sched.running:  # 未运行
             info('开启检查定时任务...')
             info('')
-            check_job()
+            check_job(ui.spinBox_timeout.value())
             sched.start()
 
         elif sched.state == 2:
             info('恢复检查定时任务...')
             info('')
-            check_job()
+            check_job(ui.spinBox_timeout.value())
             sched.resume()
 
         # if job is None:

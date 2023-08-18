@@ -16,9 +16,9 @@ class SignalStoreLogBrowser(QObject):
     append_log = pyqtSignal(str)
 
 
-class Main(QMainWindow, Ui_MainWindow):
+class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None):
-        super(Main, self).__init__(parent)
+        super(MainWindow, self).__init__(parent)
 
         self.log_idx = 0
         self.cycle = 2 * 60 * 60
@@ -94,6 +94,7 @@ class Main(QMainWindow, Ui_MainWindow):
         self.radio_cycle_half_an_hour.setEnabled(not applicationContext.is_checking)
         self.radio_cycle_one_hour.setEnabled(not applicationContext.is_checking)
         self.radio_cycle_two_hour.setEnabled(not applicationContext.is_checking)
+        self.spinBox_timeout.setEnabled(not applicationContext.is_checking)
         self.comboBox_switch_ftqq.setEnabled(not applicationContext.is_checking)
         self.lineEdit_ftqq_key.setEnabled(not applicationContext.is_checking and self.comboBox_switch_ftqq.isChecked())
         self.button_init.setEnabled(not applicationContext.is_checking)
@@ -107,7 +108,7 @@ class Main(QMainWindow, Ui_MainWindow):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
 
-    mainWindow = Main()
+    mainWindow = MainWindow()
     mainWindow.show()
 
     sys.exit(app.exec_())

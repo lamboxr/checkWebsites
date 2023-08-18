@@ -7,14 +7,15 @@ import applicationContext
 
 class Ui_MainWindow(object):
 
-    def setupUi(self, MainWindow):
+    def setupUi(self, mainWindow):
         self.font_label = QFont()
         self.font_label.setPointSize(10)
 
-        MainWindow.resize(800, 720)
-        MainWindow.setFixedSize(800, 720)
-        self.central_widget = QtWidgets.QWidget(MainWindow)
-        # MainWindow.move(300, 100)
+        mainWindow.resize(800, 720)
+        mainWindow.setFixedSize(800, 720)
+        self.central_widget = QtWidgets.QWidget(mainWindow)
+        self.central_widget.setObjectName("central_widget")
+        # mainWindow.move(300, 100)
 
         # self.notice_Label = QtWidgets.QLabel(self.central_widget)
         # self.notice_Label.setGeometry(QtCore.QRect(40, 25, 300, 40))
@@ -32,9 +33,19 @@ class Ui_MainWindow(object):
         self.radio_cycle_two_hour.setGeometry(QtCore.QRect(440, 25, 100, 40))
         self.radio_cycle_two_hour.setChecked(True)
 
-        self.central_widget.setObjectName("central_widget")
+        self.label_timeout = QtWidgets.QLabel(self.central_widget)
+        self.label_timeout.setGeometry((QtCore.QRect(40, 60, 100, 40)))
+        self.spinBox_timeout = QtWidgets.QSpinBox(self.central_widget)
+        self.spinBox_timeout.setGeometry((QtCore.QRect(140, 69, 75, 22)))
+        self.spinBox_timeout.setAlignment(Qt.AlignRight)
+        self.spinBox_timeout.setValue(30)
+        self.spinBox_timeout.setMinimum(10)
+        self.spinBox_timeout.setMaximum(60)
+        self.label_timeout_range = QtWidgets.QLabel(self.central_widget)
+        self.label_timeout_range.setGeometry((QtCore.QRect(225, 60, 100, 40)))
+
         self.log_Browser = QtWidgets.QTextBrowser(self.central_widget)
-        self.log_Browser.setGeometry(QtCore.QRect(40, 80, 720, 460))
+        self.log_Browser.setGeometry(QtCore.QRect(40, 115, 720, 425))
         self.log_Browser.setObjectName("log_Browser")
 
         self.label_warning = QtWidgets.QLabel(self.central_widget)
@@ -78,29 +89,30 @@ class Ui_MainWindow(object):
         self.button_determine.setObjectName("button_determine")
         self.button_determine.setDisabled(True)
 
-        MainWindow.setCentralWidget(self.central_widget)
-        self.menubar = QtWidgets.QMenuBar(MainWindow)
+        mainWindow.setCentralWidget(self.central_widget)
+        self.menubar = QtWidgets.QMenuBar(mainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 577, 26))
         self.menubar.setObjectName("menubar")
-        MainWindow.setMenuBar(self.menubar)
-        self.statusbar = QtWidgets.QStatusBar(MainWindow)
+        mainWindow.setMenuBar(self.menubar)
+        self.statusbar = QtWidgets.QStatusBar(mainWindow)
         self.statusbar.setObjectName("statusbar")
-        MainWindow.setStatusBar(self.statusbar)
+        mainWindow.setStatusBar(self.statusbar)
 
-        self.retranslateUi(MainWindow)
-        QtCore.QMetaObject.connectSlotsByName(MainWindow)
+        self.retranslateUi(mainWindow)
+        QtCore.QMetaObject.connectSlotsByName(mainWindow)
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(
-            _translate("MainWindow", "网站首页检查器 v%s -- by %s" % (applicationContext.version, applicationContext.author)))
-        self.button_init.setText(_translate("MainWindow", "生成模版"))
-        self.button_start.setText(_translate("MainWindow", "启  动"))
-        self.button_determine.setText(_translate("MainWindow", "停  止"))
-        self.label_cycle.setText(_translate("MainWindow", "时间间隔:"))
-        self.radio_cycle_quarter.setText(_translate("MainWindow", "15分钟"))
-        self.radio_cycle_half_an_hour.setText(_translate("MainWindow", "30分钟"))
-        self.radio_cycle_one_hour.setText(_translate("MainWindow", "1小时"))
-        self.radio_cycle_two_hour.setText(_translate("MainWindow", "2小时"))
+            _translate("mainWindow", "网站首页检查器 v%s -- by %s" % (applicationContext.version, applicationContext.author)))
+        self.button_init.setText(_translate("mainWindow", "生成模版"))
+        self.button_start.setText(_translate("mainWindow", "启  动"))
+        self.button_determine.setText(_translate("mainWindow", "停  止"))
+        self.label_cycle.setText(_translate("mainWindow", "时间间隔:"))
+        self.label_timeout.setText(_translate("mainWindow", "超时(秒):"))
+        self.label_timeout_range.setText(_translate("mainWindow", "(10-60)"))
 
-
+        self.radio_cycle_quarter.setText(_translate("mainWindow", "15分钟"))
+        self.radio_cycle_half_an_hour.setText(_translate("mainWindow", "30分钟"))
+        self.radio_cycle_one_hour.setText(_translate("mainWindow", "1小时"))
+        self.radio_cycle_two_hour.setText(_translate("mainWindow", "2小时"))
